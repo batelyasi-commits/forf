@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>תרגול לולאת for</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0b1329, #1c2a4a);
+      color: #fff;
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .game-card {
+      background: #182238;
+      border-radius: 24px;
+      padding: 22px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      text-align: center;
+      border: 1px solid #2d3f66;
+      position: relative;
+    }
+    h1 { color: #38bdf8; font-size: 1.6rem; margin: 0 0 10px 0; }
+    
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .world-badge {
+      background: #0284c7;
+      color: #fff;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+    .battery-bar {
+      background: #0b1329;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #2d3f66;
+      margin-bottom: 15px;
+    }
+    .battery-fill {
+      background: linear-gradient(90deg, #38bdf8, #4ade80);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    /* תיבת קוד פייתון */
+    .code-box {
+      background: #070c18;
+      border-right: 4px solid #38bdf8;
+      padding: 14px;
+      border-radius: 12px;
+      text-align: left;
+      direction: ltr;
+      font-family: Consolas, monospace;
+      font-size: 1.05rem;
+      margin: 12px 0;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+    .kw { color: #f472b6; font-weight: bold; }
+    .fn { color: #38bdf8; }
+    .num { color: #fbbf24; }
+    .str { color: #4ade80; }
+
+    .question {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin: 12px 0;
+      color: #f8fafc;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    /* תיבת הקלדת range עם סוגריים מובנים */
+    .range-box-wrapper {
+      display: inline-flex;
+      align-items: center;
+      background: #070c18;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      padding: 6px 14px;
+      direction: ltr;
+      margin: 12px 0;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    .range-box-text {
+      color: #38bdf8;
+      font-family: Consolas, monospace;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    .range-box-input {
+      background: transparent;
+      border: none;
+      color: #fbbf24;
+      font-family: Consolas, monospace;
+      font-size: 1.25rem;
+      font-weight: bold;
+      padding: 4px 6px;
+      width: 140px;
+      text-align: center;
+      outline: none;
+    }
+
+    .single-input-box {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid #38bdf8;
+      background: #070c18;
+      color: #fff;
+      font-size: 1.1rem;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    /* גריד לוח מספרים מעורבב */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 15px 0;
+    }
+    .grid-btn {
+      background: #233354;
+      color: white;
+      border: 2px solid transparent;
+      padding: 12px 0;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .grid-btn.selected {
+      background: #0284c7;
+      border-color: #38bdf8;
+      transform: scale(1.05);
+    }
+
+    /* שאלה אמריקאית */
+    .choice-container {
+      display: grid;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .btn-choice {
+      background: #233354;
+      color: white;
+      border: 2px solid transparent;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: right;
+      transition: 0.2s;
+    }
+    .btn-choice:active { transform: scale(0.98); }
+    .btn-choice.selected { background: #0284c7; border-color: #38bdf8; }
+
+    .btn-main {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 12px;
+      width: 100%;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .feedback {
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      display: none;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .feedback.correct { background: rgba(22, 101, 52, 0.5); border: 1px solid #4ade80; color: #86efac; }
+    .feedback.wrong { background: rgba(153, 27, 27, 0.5); border: 1px solid #f87171; color: #fca5a5; }
+
+    /* מסך פתיחה */
+    .input-row { text-align: right; margin-bottom: 12px; }
+    .input-row label { display: block; margin-bottom: 4px; font-weight: bold; color: #cbd5e1; }
+    .input-row input {
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #070c18;
+      color: white;
+      font-size: 1rem;
+    }
+
+    /* מסך מעבר רובוט */
+    .stage-modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(11, 19, 41, 0.96);
+      border-radius: 24px;
+      padding: 22px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .dancing-robot {
+      font-size: 4rem;
+      animation: robotDance 0.6s infinite alternate;
+    }
+    @keyframes robotDance {
+      0% { transform: translateY(0) rotate(-6deg); }
+      100% { transform: translateY(-14px) rotate(6deg); }
+    }
+    .speech-bubble {
+      background: #0284c7;
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 16px;
+      margin: 14px 0 8px 0;
+      font-size: 1.05rem;
+      font-weight: bold;
+      position: relative;
+      line-height: 1.4;
+    }
+    .btn-audio {
+      background: #334155;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-card" id="app">
+  <!-- מסך פתיחה -->
+  <div id="startScreen">
+    <div style="font-size: 3.5rem; margin-bottom: 8px;">🤖⚡</div>
+    <h1>תרגול לולאת for</h1>
+    <p style="color: #94a3b8; font-size: 0.95rem;">
+      ברוכה הבאה! עזרי לרובוט לפצח 25 אתגרים ב-5 שלבים, לשמוע את קולו ולטעון את סוללת העל שלו!
+    </p>
+    
+    <div class="input-row">
+      <label>שם פרטי:</label>
+      <input type="text" id="firstName">
+    </div>
+    <div class="input-row">
+      <label>שם משפחה:</label>
+      <input type="text" id="lastName">
+    </div>
+
+    <button class="btn-main" onclick="startGame()">קדימה, מתחילים במשימה! 🚀</button>
+  </div>
+
+  <!-- מסך המשחק -->
+  <div id="gameScreen" style="display: none;">
+    <div class="status-bar">
+      <span class="world-badge" id="worldBadge">שלב 1</span>
+      <span id="stepDisplay">אתגר 1 מתוך 25</span>
+    </div>
+
+    <div class="battery-bar">
+      <div class="battery-fill" id="batteryFill"></div>
+    </div>
+
+    <div class="code-box" id="codeArea"></div>
+    <div class="question" id="questionText"></div>
+
+    <div id="interactionArea"></div>
+    <div class="feedback" id="feedbackArea"></div>
+
+    <button class="btn-main" id="checkBtn" onclick="checkAnswer()">בדקי תשובה 🔍</button>
+    <button class="btn-main" id="nextBtn" style="display: none;" onclick="nextQuestion()">לאתגר הבא ⬅</button>
+  </div>
+
+  <!-- חלון מעבר חגיגי ומדבר בסיום כל שלב -->
+  <div class="stage-modal" id="stageModal">
+    <div class="dancing-robot">🤖</div>
+    <div class="speech-bubble" id="robotSpeech"></div>
+    <button class="btn-audio" onclick="replaySpeech()">🔊 השמיעי שוב</button>
+    <button class="btn-main" onclick="closeStageModal()">קדימה לשלב הבא! ⚡</button>
+  </div>
+
+  <!-- מסך סיום -->
+  <div id="endScreen" style="display: none;">
+    <div style="font-size: 3.5rem;">🏆🤖</div>
+    <h1 style="color: #4ade80;">כל הכבוד, אלופה!</h1>
+    <h2 id="studentFullName" style="color: #fff; margin: 5px 0;"></h2>
+    <p style="color: #94a3b8;">השלמת את כל 25 אתגרי הלולאות בפייתון!</p>
+    
+    <div style="background: #070c18; padding: 18px; border-radius: 16px; margin: 15px 0; border: 1px solid #2d3f66;">
+      <div style="font-size: 2.2rem; font-weight: bold; color: #38bdf8;" id="finalScoreDisplay"></div>
+      <div style="font-size: 1.05rem; color: #cbd5e1; margin-top: 5px;" id="correctAnswersText"></div>
+    </div>
+    
+    <p id="motivationalText" style="font-size: 0.95rem; color: #e2e8f0;"></p>
+    <p style="font-size: 0.85rem; color: #64748b;">💡 צלמי מסך זה כדי להראות למורה כהוכחת ביצוע!</p>
+    <button class="btn-main" onclick="location.reload()">תרגול חוזר לשיפור ציון 🔄</button>
+  </div>
+</div>
+
+<script>
+  let studentName = "";
+  let currentIndex = 0;
+  let correctCount = 0;
+  let stageCorrectCount = 0;
+  let hasAnswered = false;
+  let selectedGridItems = [];
+  let selectedChoiceIdx = null;
+  let currentSpokenText = "";
+  let activeChallenges = [];
+
+  // פונקציית ערבוב למספרים בלוח בלבד
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // סימולטור פייתון אמיתי לחישוב range
+  function simulatePythonRange(args) {
+    if (!args || args.length === 0 || args.length > 3) return null;
+    let start = 0, stop = 0, step = 1;
+    if (args.length === 1) {
+      stop = args[0];
+    } else if (args.length === 2) {
+      start = args[0];
+      stop = args[1];
+    } else if (args.length === 3) {
+      start = args[0];
+      stop = args[1];
+      step = args[2];
+    }
+    if (step === 0) return null;
+    if (Math.abs((stop - start) / step) > 2000) return null;
+    const res = [];
+    if (step > 0) {
+      for (let i = start; i < stop; i += step) res.push(i);
+    } else {
+      for (let i = start; i > stop; i += step) res.push(i);
+    }
+    return res;
+  }
+
+  // דיבור רובוטי קצר
+  function speakRobot(text) {
+    currentSpokenText = text;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '');
+      const utter = new SpeechSynthesisUtterance(cleanText);
+      utter.lang = 'he-IL';
+      utter.rate = 1.05;
+      utter.pitch = 1.3;
+      window.speechSynthesis.speak(utter);
+    }
+  }
+
+  function replaySpeech() {
+    if (currentSpokenText) speakRobot(currentSpokenText);
+  }
+
+  // מנגנון צלילים משודרג
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    try {
+      if (type === 'correct') {
+        // מנגינת פעמונים עולה ושמחה (דו-מי-סול-דו גבוה)
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle'; // צליל פעמון חם ונעים
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.07);
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.07 + 0.28);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + idx * 0.07);
+          osc.stop(audioCtx.currentTime + idx * 0.07 + 0.28);
+        });
+      } else if (type === 'wrong') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(130, audioCtx.currentTime + 0.22);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.22);
+      }
+    } catch(e) {}
+  }
+
+  // 25 אתגרים ערוכים ומסודרים
+  const stage1 = [
+    {
+      world: "שלב 1: סוללת ההתנעה ⚡",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(<span class="str">"שלום"</span>)`,
+      q: "כמה פעמים תודפס המילה 'שלום'? הקלידי את המספר:",
+      expected: "5",
+      tip: "כשיש ערך יחיד בסוגריים, הלולאה מבצעת בדיוק את כמות הפעמים הזו (5 פעמים)."
+    },
+    {
+      world: "שלב 1: סוללת ההתנעה ⚡",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "מה יהיה המספר הראשון שיודפס על המסך? הקלידי:",
+      expected: "0",
+      tip: "בפייתון מתחילים לספור תמיד מ-0 כברירת מחדל!"
+    },
+    {
+      world: "שלב 1: סוללת ההתנעה ⚡",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">6</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "שימי לב! מה יהיה המספר השני שיודפס על המסך? הקלידי:",
+      expected: "1",
+      tip: "זהירות ממלכודת: המספר הראשון הוא 0, ולכן המספר השני בתור הוא 1!"
+    },
+    {
+      world: "שלב 1: סוללת ההתנעה ⚡",
+      type: "grid",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "סמני בלוח את כל המספרים שהלולאה תדפיס:",
+      gridOptions: [0, 1, 2, 3, 4, 5, 6, 7],
+      expected: [0, 1, 2, 3],
+      tip: "הלולאה רצה על המספרים: 0, 1, 2, 3 (המספר 4 לא נכלל)."
+    },
+    {
+      world: "שלב 1: סוללת ההתנעה ⚡",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רצינו לקבל את הפלט: 0, 1, 2, 3, 4. מה נקליד בתוך ה-range?",
+      targetOutput: [0, 1, 2, 3, 4],
+      expected: ["5", "0,5", "0, 5"],
+      tip: "אפשר לכתוב 5 וגם 0, 5 (שניהם נכונים לחלוטין ומייצרים 0 עד 4)!"
+    }
+  ];
+
+  const stage2 = [
+    {
+      world: "שלב 2: גשר הטווחים 🌉",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">8</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "מה המספר הראשון שיודפס? הקלידי:",
+      expected: "3",
+      tip: "כשיש שני מספרים, המספר הראשון הוא מספר ההתחלה המדויק (3)."
+    },
+    {
+      world: "שלב 2: גשר הטווחים 🌉",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>, <span class="num">10</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "מעקב: מה יהיה המספר השלישי שיודפס על המסך? הקלידי:",
+      expected: "6",
+      tip: "נעקוב צעד אחר צעד: המספר הראשון הוא 4, השני הוא 5, והשלישי הוא 6!"
+    },
+    {
+      world: "שלב 2: גשר הטווחים 🌉",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רצינו לקבל בדיוק את הפלט: 2, 3, 4, 5, 6, 7. מה נקליד בתוך ה-range? (למשל: 2, 8)",
+      targetOutput: [2, 3, 4, 5, 6, 7],
+      expected: ["2,8", "2, 8"],
+      tip: "מתחילים ב-2 ומסיימים ב-8 (כדי ש-7 ייכלל): range(2, 8)."
+    },
+    {
+      world: "שלב 2: גשר הטווחים 🌉",
+      type: "grid",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">7</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "סמני בלוח את כל המספרים שיודפסו:",
+      gridOptions: [2, 3, 4, 5, 6, 7, 8, 9],
+      expected: [3, 4, 5, 6],
+      tip: "מתחילים מ-3 ומסיימים ב-6 (7 אינו מודפס)."
+    },
+    {
+      world: "שלב 2: גשר הטווחים 🌉",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רצינו לקבל את המספרים: 10, 11, 12, 13. מה נקליד בתוך ה-range?",
+      targetOutput: [10, 11, 12, 13],
+      expected: ["10,14", "10, 14"],
+      tip: "מתחילים ב-10 ומסיימים ב-14 כדי ש-13 ייכלל: range(10, 14)."
+    }
+  ];
+
+  const stage3 = [
+    {
+      world: "שלב 3: מדרגות הדילוג 🪜",
+      type: "grid",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="num">11</span>, <span class="num">2</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "סמני בלוח את כל המספרים שהלולאה תדפיס בקפיצות של 2:",
+      gridOptions: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      expected: [2, 4, 6, 8, 10],
+      tip: "מדלגים ב-2 מ-2 ועד 10 כולל (2, 4, 6, 8, 10)."
+    },
+    {
+      world: "שלב 3: מדרגות הדילוג 🪜",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רצינו לקבל את המספרים האי-זוגיים: 1, 3, 5, 7. מה נקליד בתוך ה-range? (התחלה, סוף, קפיצה):",
+      targetOutput: [1, 3, 5, 7],
+      expected: ["1,8,2", "1, 8, 2", "1,9,2", "1, 9, 2"],
+      tip: "התחלה 1, סוף 8 (או 9), וקפיצה של 2: range(1, 8, 2)."
+    },
+    {
+      world: "שלב 3: מדרגות הדילוג 🪜",
+      type: "grid",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">11</span>, <span class="num">3</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "הלולאה קופצת ב-3! סמני את כל המספרים שייצאו:",
+      gridOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      expected: [1, 4, 7, 10],
+      tip: "מתחילים מ-1 ומוסיפים 3 בכל פעם: 1, 4, 7, 10."
+    },
+    {
+      world: "שלב 3: מדרגות הדילוג 🪜",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רצינו לקפוץ בדילוגי 5 ולקבל: 5, 10, 15, 20. מה נקליד בתוך ה-range?",
+      targetOutput: [5, 10, 15, 20],
+      expected: ["5,21,5", "5, 21, 5", "5,25,5", "5, 25, 5"],
+      tip: "מתחילים ב-5, מסיימים בכל מספר בין 21 ל-25, והקפיצה היא 5!"
+    },
+    {
+      world: "שלב 3: מדרגות הדילוג 🪜",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">20</span>, <span class="num">4</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "קפיצות ב-4: מה יהיה המספר השלישי שיודפס? הקלידי:",
+      expected: "11",
+      tip: "נעקוב בדילוגים של 4: הראשון הוא 3, השני הוא 7 (3+4), והשלישי הוא 11 (7+4)!"
+    }
+  ];
+
+  const stage4 = [
+    {
+      world: "שלב 4: מוח הרובוט 🧠",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">6</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i * <span class="num">4</span>)`,
+      q: "מה יהיה המספר השני שיודפס על המסך? הקלידי:",
+      expected: "8",
+      tip: "בסיבוב הראשון i=1 (יודפס 4). בסיבוב השני i=2, ולכן יודפס: 2 × 4 = 8!"
+    },
+    {
+      world: "שלב 4: מוח הרובוט 🧠",
+      type: "grid",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i + <span class="num">10</span>)`,
+      q: "סמני בלוח את כל המספרים שהלולאה תדפיס:",
+      gridOptions: [0, 1, 2, 10, 11, 12, 13],
+      expected: [10, 11, 12],
+      tip: "ערכי i הם 0, 1, 2. נוסיף 10 לכל אחד: 10, 11, 12."
+    },
+    {
+      world: "שלב 4: מוח הרובוט 🧠",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i * <span class="num">10</span>)`,
+      q: "הפלט שהתקבל הוא: 10, 20, 30. מה הטווח שצריך לרשום בתוך ה-range?",
+      targetOutput: [1, 2, 3],
+      expected: ["1,4", "1, 4"],
+      tip: "המספרים המוכפלים ב-10 הם 1, 2, 3, ולכן הטווח הוא range(1, 4)."
+    },
+    {
+      world: "שלב 4: מוח הרובוט 🧠",
+      type: "number",
+      code: `<span class="kw">total</span> = <span class="num">0</span><br><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">4</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">total</span> = <span class="kw">total</span> + i<br><span class="fn">print</span>(<span class="kw">total</span>)`,
+      q: "אתגר צבירה: מה יהיה הערך הסופי של total שיודפס בסוף? הקלידי:",
+      expected: "6",
+      tip: "הלולאה מחברת: 1 + 2 + 3 = 6."
+    },
+    {
+      world: "שלב 4: מוח הרובוט 🧠",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i * <span class="num">3</span>)`,
+      q: "רצינו שהפלט יהיה: 3, 6, 9, 12. מה נרשום בתוך ה-range?",
+      targetOutput: [1, 2, 3, 4],
+      expected: ["1,5", "1, 5"],
+      tip: "המספרים המוכפלים ב-3 הם 1, 2, 3, 4, ולכן הטווח הנדרש הוא range(1, 5)!"
+    }
+  ];
+
+  const stage5 = [
+    {
+      world: "שלב 5: קרב הבוס הגדול 🏆",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רוצים להדפיס את כל המספרים מ-200 ועד 400 כולל! מה נרשום בתוך ה-range?",
+      targetOutput: Array.from({length: 201}, (_, i) => i + 200),
+      expected: ["200,401", "200, 401"],
+      tip: "מתחילים ב-200 וכדי ש-400 ייכלל חייבים לעצור ב-401!"
+    },
+    {
+      world: "שלב 5: קרב הבוס הגדול 🏆",
+      type: "range_input",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>( ... ):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "רוצים להדפיס את המספרים האי-זוגיים מ-1 עד 100 (1, 3, 5... 99). מה נרשום ב-range?",
+      targetOutput: Array.from({length: 50}, (_, i) => 1 + i * 2),
+      expected: ["1,100,2", "1, 100, 2", "1,101,2", "1, 101, 2"],
+      tip: "מתחילים ב-1, עוצרים ב-100 (או 101), ובדילוגים של 2: range(1, 100, 2)."
+    },
+    {
+      world: "שלב 5: קרב הבוס הגדול 🏆",
+      type: "number",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>, <span class="num">25</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i)`,
+      q: "כמה מספרים בסך הכל יודפסו על המסך? הקלידי את המספר:",
+      expected: "15",
+      tip: "מ-10 עד 24 יש בדיוק 15 מספרים (25 מינוס 10 = 15 פעמים)."
+    },
+    {
+      world: "שלב 5: קרב הבוס הגדול 🏆",
+      type: "choice",
+      code: `<span class="kw">count</span> = <span class="num">0</span><br><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">6</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">count</span> = <span class="kw">count</span> + <span class="num">1</span><br><span class="fn">print</span>(<span class="kw">count</span>)`,
+      q: "מה יהיה הפלט הסופי של התוכנית?",
+      options: ["4", "5", "6", "0"],
+      expected: 1,
+      tip: "הלולאה רצה 5 פעמים עבור המספרים 1, 2, 3, 4, 5, ובכל פעם מוסיפה 1 ל-count, ולכן הפלט הוא 5."
+    },
+    {
+      world: "שלב 5: קרב הבוס הגדול 🏆",
+      type: "choice",
+      code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="num">8</span>, <span class="num">3</span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(i * <span class="num">2</span>)`,
+      q: "שאלת הגמר: מה יהיה הפלט המלא שיוצג על המסך?",
+      options: [
+        "4 ואז 10 (בשתי שורות נפרדות)",
+        "4, 10, 16 (בשלוש שורות)",
+        "2 ואז 5",
+        "4, 8, 12"
+      ],
+      expected: 0,
+      tip: "ערכי i הם 2 ו-5 (הקפיצה הבאה היא 8 שכבר מעבר לגבול!). מכפילים ב-2: 4 ואז 10."
+    }
+  ];
+
+  function startGame() {
+    const f = document.getElementById("firstName").value.trim();
+    const l = document.getElementById("lastName").value.trim();
+    if (!f || !l) {
+      alert("אנא רשמי שם פרטי ושם משפחה כדי להתחיל!");
+      return;
+    }
+    studentName = f + " " + l;
+
+    // סדר שאלות קבוע ומסודר (ללא ערבוב)
+    activeChallenges = [
+      ...stage1,
+      ...stage2,
+      ...stage3,
+      ...stage4,
+      ...stage5
+    ];
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+    loadChallenge();
+  }
+
+  function loadChallenge() {
+    hasAnswered = false;
+    selectedGridItems = [];
+    selectedChoiceIdx = null;
+    const ch = activeChallenges[currentIndex];
+    
+    document.getElementById("worldBadge").innerText = ch.world;
+    document.getElementById("stepDisplay").innerText = `אתגר ${currentIndex + 1} מתוך ${activeChallenges.length}`;
+    document.getElementById("codeArea").innerHTML = ch.code;
+    document.getElementById("questionText").innerText = ch.q;
+
+    const pct = Math.round((currentIndex / activeChallenges.length) * 100);
+    document.getElementById("batteryFill").style.width = pct + "%";
+
+    const area = document.getElementById("interactionArea");
+    area.innerHTML = "";
+
+    if (ch.type === "number") {
+      area.innerHTML = `<input type="number" id="singleAnswer" class="single-input-box" placeholder="הקלידי מספר כאן...">`;
+    } else if (ch.type === "range_input") {
+      area.innerHTML = `
+        <div class="range-box-wrapper">
+          <span class="range-box-text">range(</span>
+          <input type="text" id="userRange" class="range-box-input" placeholder="הקלידי">
+          <span class="range-box-text">)</span>
+        </div>
+      `;
+    } else if (ch.type === "grid") {
+      const grid = document.createElement("div");
+      grid.className = "grid-container";
+      
+      // ערבוב המספרים בתוך הלוח בלבד
+      const shuffledNumbers = shuffleArray(ch.gridOptions);
+      shuffledNumbers.forEach(val => {
+        const btn = document.createElement("button");
+        btn.className = "grid-btn";
+        btn.innerText = val;
+        btn.onclick = () => toggleGridItem(val, btn);
+        grid.appendChild(btn);
+      });
+      area.appendChild(grid);
+    } else if (ch.type === "choice") {
+      const cCont = document.createElement("div");
+      cCont.className = "choice-container";
+      ch.options.forEach((optText, idx) => {
+        const b = document.createElement("button");
+        b.className = "btn-choice";
+        b.innerText = optText;
+        b.onclick = () => selectChoice(idx, b);
+        cCont.appendChild(b);
+      });
+      area.appendChild(cCont);
+    }
+
+    document.getElementById("feedbackArea").style.display = "none";
+    document.getElementById("checkBtn").style.display = "block";
+    document.getElementById("nextBtn").style.display = "none";
+  }
+
+  function toggleGridItem(val, btn) {
+    if (hasAnswered) return;
+    const idx = selectedGridItems.indexOf(val);
+    if (idx > -1) {
+      selectedGridItems.splice(idx, 1);
+      btn.classList.remove("selected");
+    } else {
+      selectedGridItems.push(val);
+      btn.classList.add("selected");
+    }
+  }
+
+  function selectChoice(idx, btn) {
+    if (hasAnswered) return;
+    document.querySelectorAll(".btn-choice").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedChoiceIdx = idx;
+  }
+
+  function checkAnswer() {
+    if (hasAnswered) return;
+    const ch = activeChallenges[currentIndex];
+    let isCorrect = false;
+
+    if (ch.type === "number") {
+      const val = document.getElementById("singleAnswer").value.trim();
+      if (val === "") { alert("אנא הקלידי תשובה!"); return; }
+      isCorrect = (val === ch.expected);
+    } else if (ch.type === "range_input") {
+      const inputEl = document.getElementById("userRange");
+      if (!inputEl || inputEl.value.trim() === "") { alert("אנא הקלידי טווח בסוגריים!"); return; }
+      
+      let cleanVal = inputEl.value.replace(/range/gi, '').replace(/[\(\)\s]/g, '');
+      const userArgs = cleanVal.split(',').map(x => Number(x));
+
+      // בדיקה חכמה באמצעות סימולטור range
+      if (userArgs.every(n => !isNaN(n) && Number.isInteger(n)) && ch.targetOutput) {
+        const generated = simulatePythonRange(userArgs);
+        if (generated && JSON.stringify(generated) === JSON.stringify(ch.targetOutput)) {
+          isCorrect = true;
+        }
+      }
+
+      // גיבוי למקרה רגיל
+      if (!isCorrect && ch.expected) {
+        isCorrect = ch.expected.some(exp => exp.replace(/[\(\)\s]/g, '') === cleanVal);
+      }
+    } else if (ch.type === "grid") {
+      if (selectedGridItems.length === 0) { alert("אנא בחרי לפחות מספר אחד!"); return; }
+      selectedGridItems.sort((a,b)=>a-b);
+      const expectedSorted = [...ch.expected].sort((a,b)=>a-b);
+      isCorrect = (JSON.stringify(selectedGridItems) === JSON.stringify(expectedSorted));
+    } else if (ch.type === "choice") {
+      if (selectedChoiceIdx === null) { alert("אנא בחרי באחת האפשרויות!"); return; }
+      isCorrect = (selectedChoiceIdx === ch.expected);
+    }
+
+    hasAnswered = true;
+    const fb = document.getElementById("feedbackArea");
+    fb.style.display = "block";
+
+    if (isCorrect) {
+      correctCount++;
+      stageCorrectCount++;
+      fb.className = "feedback correct";
+      fb.innerHTML = "⚡ <strong>מדויק לחלוטין! סוללת הרובוט נטענת!</strong>";
+      playSound('correct');
+    } else {
+      fb.className = "feedback wrong";
+      fb.innerHTML = `💡 <strong>לא מדויק:</strong> ${ch.tip}`;
+      playSound('wrong');
+    }
+
+    document.getElementById("checkBtn").style.display = "none";
+    document.getElementById("nextBtn").style.display = "block";
+  }
+
+  function nextQuestion() {
+    currentIndex++;
+    
+    // סיום שלב (כל 5 שאלות)
+    if (currentIndex % 5 === 0 && currentIndex < activeChallenges.length) {
+      showStageSummary();
+      return;
+    }
+
+    if (currentIndex < activeChallenges.length) {
+      loadChallenge();
+    } else {
+      showSummary();
+    }
+  }
+
+  function showStageSummary() {
+    let msg = "";
+    if (stageCorrectCount === 5) {
+      msg = "מושלם! 5 מתוך 5! את אלופה, ממשיכים לשלב הבא.";
+    } else if (stageCorrectCount >= 3) {
+      msg = `ענית נכון על ${stageCorrectCount} מתוך 5, יפה מאוד! ממשיכים.`;
+    } else if (stageCorrectCount >= 1) {
+      msg = `ענית על ${stageCorrectCount} מתוך 5. כדאי להתרכז יותר, ממשיכים.`;
+    } else {
+      msg = "אף תשובה לא הייתה נכונה בשלב הזה. קחי נשימה, בשלב הבא תצליחי יותר!";
+    }
+
+    document.getElementById("robotSpeech").innerText = msg;
+    document.getElementById("stageModal").style.display = "flex";
+    speakRobot(msg);
+
+    stageCorrectCount = 0;
+  }
+
+  function closeStageModal() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    document.getElementById("stageModal").style.display = "none";
+    if (currentIndex < activeChallenges.length) {
+      loadChallenge();
+    } else {
+      showSummary();
+    }
+  }
+
+  function showSummary() {
+    document.getElementById("gameScreen").style.display = "none";
+    document.getElementById("endScreen").style.display = "block";
+
+    const grade = Math.round((correctCount / activeChallenges.length) * 100);
+    document.getElementById("studentFullName").innerText = studentName;
+    document.getElementById("finalScoreDisplay").innerText = `ציון סופי: ${grade}`;
+    document.getElementById("correctAnswersText").innerText = `ענית נכון על ${correctCount} מתוך ${activeChallenges.length} אתגרים!`;
+
+    let msg = "";
+    if (grade >= 90) msg = "🌟 פנומנלי! שליטה מעמיקה בכתיבת לולאות for ובהבנת פלט!";
+    else if (grade >= 75) msg = "👏 הישג מרשים מאוד! הצלחת לפצח את רוב האתגרים לבד!";
+    else if (grade >= 60) msg = "👍 עבודה טובה! התרגול עזר להבין איפה כדאי לדייק.";
+    else msg = "💪 כל הכבוד על המאמץ! מומלץ לעשות סיבוב נוסף כדי לשפר את התוצאה.";
+
+    document.getElementById("motivationalText").innerText = msg;
+    speakRobot("סיימת את כל האתגרים! כל הכבוד.");
+  }
+</script>
+
+</body>
+</html>
